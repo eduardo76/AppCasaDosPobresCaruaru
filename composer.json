@@ -1,0 +1,12 @@
+{
+    "require": {
+      "ext-pdo": "*",
+      "ext-json": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "core\\": "core/",
+            "src\\": "src/"
+        }
+    }
+}
