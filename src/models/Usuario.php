@@ -8,6 +8,17 @@ class Usuario extends Model{
     private $nome;
     private $email;
     private $senha;
+    private $logedUser;
+
+    public function getLogedUser()
+    {
+        return $this->logedUser;
+    }
+
+    public function setLogedUser($logedUser)
+    {
+        $this->logedUser = $logedUser;
+    }
 
     public function getId()
     {

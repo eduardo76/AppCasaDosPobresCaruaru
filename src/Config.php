@@ -12,4 +12,7 @@ class Config {
 
     const ERROR_CONTROLLER = 'ErrorController';
     const DEFAULT_ACTION = 'index';
+
+    //Secret Key JWT
+    const SECRET_KEY_JWT = '781833df098bd3665f223e194e019963';
 }

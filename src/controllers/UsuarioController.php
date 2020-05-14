@@ -24,21 +24,73 @@ class UsuarioController extends Controller {
 
     }//metodo
 
-    //Listar usuário pelo id.
-    public function getUserForId($args = array()){
+    public function login(){
 
         $array = array();
 
-        $method = parent::getMethodRequisition();
+        $metodo = parent::getMethodRequisition();
+        $data = parent::getRequestData();
 
-        if($method == "GET"){
-            $usuarios = UsuarioDao::getUser($args['id']);
+        if($metodo == "POST"){
 
-            if($usuarios){
-                $array['usuario'] = $usuarios;
+            if(!empty($data['email']) && !empty($data['senha'])){
+                $usuario = new Usuario();
+                $usuario->setEmail(addslashes($data['email']));
+                $usuario->setSenha(addslashes($data['senha']));
+
+                if(UsuarioDao::login($usuario)){
+                    //gerar JTW
+                    //$array['logedUser'] = $usuario->getLogedUser();
+                    $idLogedUser = $usuario->getLogedUser();
+                    $array['jwt'] = UsuarioDao::createJwt($idLogedUser);
+                }else{
+                    $array['error'] = "Acesso negado";
+                }
             }else{
-                $array['error'] = "Usuário não existe na base de dados";
+                $array['error'] = "Preencha os campos e-mail e senha";
             }
+
+        }else{
+            $array['error'] = "Método indisponível";
+        }
+
+        parent::returnJson($array);
+
+    }
+
+    //Listar usuário pelo id.
+    public function getUserForId($args = array()){
+
+        $array = array('loged' => 'false');
+
+        $method = parent::getMethodRequisition();
+        $data = parent::getRequestData();
+
+        if(!empty($data['jwt'])){
+
+            if($array['logedUserId'] = UsuarioDao::validateJwt($data['jwt'])){
+
+                $array['loged'] = true;
+
+                if($method == "GET"){
+                    $usuarios = UsuarioDao::getUser($args['id']);
+
+                    if($usuarios){
+                        $array['usuario'] = $usuarios;
+                    }else{
+                        http_response_code(404);
+                        $array['error'] = "Usuário não existe na base de dados";
+                    }
+                }
+
+            }else{
+                http_response_code(401);
+                $array['error'] = "Acesso negado";
+            }
+
+        }else{
+            http_response_code(401);
+            $array['error'] = "Acesso negado";
         }
 
         parent::returnJson($array);
@@ -67,6 +119,7 @@ class UsuarioController extends Controller {
                     if(UsuarioDao::insertUser($usuario)){
                         $array['usuario'] = $usuario->getId();
                         $array['jwt'] = 'Token-JWT';
+                        http_response_code(201);
                     }else{
                         $array['error'] = "Este e-mail já existe na base de dados";
                     }

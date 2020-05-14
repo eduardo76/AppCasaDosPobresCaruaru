@@ -1,8 +1,49 @@
 <?php
 namespace src\Dao;
 use src\models\Usuario;
+use src\models\Jwt;
 
 class UsuarioDao {
+
+    public static function login(Usuario $usuario){
+
+        $sql = Usuario::pdo()->prepare("SELECT id, senha FROM usuario WHERE email = :email");
+        $sql->bindValue(":email", $usuario->getEmail());
+        $sql->execute();
+
+        if($sql->rowCount() > 0){
+            $info = $sql->fetch(\PDO::FETCH_OBJ);
+
+            if(password_verify($usuario->getSenha(), $info->senha)){
+                $usuario->setLogedUser($info->id);
+                return true;
+            }else{
+                return false;
+            }
+
+        }else{
+            return false;
+        }
+
+    }
+
+    public static function createJwt($idLogedUser){
+        $jwt = new Jwt();
+        return $jwt->create($array = array('idLogedUser' => $idLogedUser));
+    }
+
+    public static function validateJwt($token){
+        $jwt = new Jwt();
+        $info = $jwt->validate($token);
+
+        if(isset($info->idLogedUser)){
+            $usuario = new Usuario();
+            $usuario->setLogedUser($info->idLogedUser);
+            return $usuario->getLogedUser();
+        }else{
+            return false;
+        }
+    }
 
     public static function insertUser(Usuario $usuario){
 
@@ -75,8 +116,6 @@ class UsuarioDao {
             $sql->execute();
 
             $array = $sql->fetch(\PDO::FETCH_OBJ);
-        }else{
-            $array = "Usuário não existe na base de dados";
         }
 
         return $array;
@@ -97,8 +136,6 @@ class UsuarioDao {
         }
 
     }
-
-    //Fazer método para verificar o usuário logado.
 
     public static function updateUser($id, $data){
         $fileds = array();
