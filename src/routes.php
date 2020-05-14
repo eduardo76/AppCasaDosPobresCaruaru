@@ -10,6 +10,7 @@ $router->post('/usuarios/new', 'UsuarioController@insertUser');
 $router->put('/usuarios/{id}/update', 'UsuarioController@updateUser');
 $router->delete('/usuarios/{id}/delete', 'UsuarioController@deleteUser');
 $router->get('/usuarios', 'UsuarioController@index');
+$router->get('/', 'ApiController@index');
 
 //
 

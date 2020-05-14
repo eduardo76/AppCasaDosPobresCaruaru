@@ -45,6 +45,11 @@ class UsuarioDao {
         }
     }
 
+    //Verificando se usuário logado é o mesmo que está fazendo a requisição
+    public  static function isMe($logedUserId, $requestId){
+        return ($logedUserId == $requestId) ? true : false;
+    }
+
     public static function insertUser(Usuario $usuario){
 
         if(self::emailValidation($usuario->getEmail())){

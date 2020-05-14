@@ -29,7 +29,8 @@ class Controller {
 
         switch ($this->getMethodRequisition()){
             case 'GET':
-                return $_GET;
+                parse_str(file_get_contents('php://input'), $data);
+                return (array) $data;
                 break;
             case 'PUT':
                 parse_str(file_get_contents('php://input'), $data);
@@ -54,6 +55,10 @@ class Controller {
         header("Content-Type: application/json");
         echo json_encode($array);
         exit;
+    }
+
+    public function setResponseStatus($status){
+        return http_response_code($status);
     }
 
 }
