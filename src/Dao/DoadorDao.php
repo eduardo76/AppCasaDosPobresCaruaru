@@ -7,8 +7,8 @@ class DoadorDao {
 
     public static function login(Doador $usuario){
 
-        $sql = Doador::pdo()->prepare("SELECT id, nome, senha FROM doador WHERE email = :email");
-        $sql->bindValue(":email", $usuario->getEmail());
+        $sql = Doador::pdo()->prepare("SELECT id, nome, senha FROM doador WHERE cpf = :cpf");
+        $sql->bindValue(":cpf", $usuario->getCpf());
         $sql->execute();
 
         if($sql->rowCount() > 0){
@@ -64,19 +64,25 @@ class DoadorDao {
 
         if(self::emailValidation($usuario->getEmail())){
 
-            $senha = $usuario->getSenha();
+            if(self::cpfValidation($usuario->getCpf())){
+                $senha = $usuario->getSenha();
 
-            $usuario->setSenha(password_hash($senha, PASSWORD_DEFAULT));
+                $usuario->setSenha(password_hash($senha, PASSWORD_DEFAULT));
 
-            $sql = Doador::pdo()->prepare("INSERT INTO doador (nome, email, senha) VALUES (:nome, :email, :senha)");
-            $sql->bindValue(":nome", $usuario->getNome());
-            $sql->bindValue(":email", $usuario->getEmail());
-            $sql->bindValue(":senha", $usuario->getSenha());
-            $sql->execute();
+                $sql = Doador::pdo()->prepare("INSERT INTO doador (nome, email, senha, cpf) VALUES (:nome, :email, :senha, :cpf)");
+                $sql->bindValue(":nome", $usuario->getNome());
+                $sql->bindValue(":email", $usuario->getEmail());
+                $sql->bindValue(":senha", $usuario->getSenha());
+                $sql->bindValue(":cpf", $usuario->getCpf());
+                $sql->execute();
 
-            $usuario->setId(Doador::pdo()->lastInsertId());
+                $usuario->setId(Doador::pdo()->lastInsertId());
 
-            return true;
+                return true;
+
+            }else{
+                return false;
+            }
 
         }else{
             return false;
@@ -89,12 +95,24 @@ class DoadorDao {
         $sql->bindValue(":email",$email);
         $sql->execute();
 
-        if($sql->rowCount() < 1){
+        if($sql->rowCount() == 0){
             return true;
         }else{
             return false;
         }
 
+    }
+
+    public static function cpfValidation($cpf){
+        $sql = Doador::pdo()->prepare("SELECT id FROM doador WHERE cpf = :cpf");
+        $sql->bindValue(":cpf", $cpf);
+        $sql->execute();
+
+        if($sql->rowCount() == 0){
+            return true;
+        }else{
+            return false;
+        }
     }
 
     public static function getAllUser(){

@@ -12,7 +12,7 @@ class Config {
     const DB_PASS = '';
 
     //hospedagem Israel
-    /*const BASE_DIR = '/israelitalo.ml/AppCasaDosPobresCaruaru/public';
+    /*const BASE_DIR = '/israelitalo.ml/casadospobrescaruaru/public';
     const DB_DRIVER = 'mysql';
     const DB_HOST = 'localhost';
     const DB_DATABASE = 'id11098679_casadospobres';
@@ -25,7 +25,7 @@ class Config {
     const DB_HOST = 'localhost';
     const DB_DATABASE = 'u973310926_casadospobres';
     CONST DB_USER = 'u973310926_casadospobres';
-    const DB_PASS = 'casadospobrescaruaru';*/
+    const DB_PASS = 'wAvcMEP+';*/
 
     const ERROR_CONTROLLER = 'ErrorController';
     const DEFAULT_ACTION = 'index';

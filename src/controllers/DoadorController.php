@@ -4,6 +4,7 @@ namespace src\controllers;
 use \core\Controller;
 use \src\models\Doador;
 use \src\Dao\DoadorDao;
+use function Sodium\add;
 
 class DoadorController extends Controller {
 
@@ -57,9 +58,9 @@ class DoadorController extends Controller {
 
         if($metodo == "POST"){
 
-            if(!empty($data['email']) && !empty($data['senha'])){
+            if(!empty($data['cpf']) && !empty($data['senha'])){
                 $usuario = new Doador();
-                $usuario->setEmail(addslashes($data['email']));
+                $usuario->setCpf(addslashes($data['cpf']));
                 $usuario->setSenha(addslashes($data['senha']));
 
                 if(DoadorDao::login($usuario)){
@@ -72,7 +73,7 @@ class DoadorController extends Controller {
                     $array['error'] = "Acesso negado";
                 }
             }else{
-                parent::setResponseStatus(204);
+                parent::setResponseStatus(203);
                 $array['error'] = "Preencha os campos e-mail e senha";
             }
 
@@ -140,40 +141,40 @@ class DoadorController extends Controller {
         $method = parent::getMethodRequisition();
         $data = parent::getRequestData();
 
-        if($method == 'POST'){
+        if(!empty($data['nome']) && !empty($data['email']) && !empty($data['senha']) && !empty($data['cpf'])){
 
-            if(!empty($data['nome']) && !empty($data['email']) && !empty($data['senha'])){
+            if($method == 'POST'){
 
-                if(filter_var($data['email'], FILTER_VALIDATE_EMAIL)){
+                    if(filter_var($data['email'], FILTER_VALIDATE_EMAIL)){
 
-                    $usuario = new Doador();
-                    $usuario->setNome(addslashes($data['nome']));
-                    $usuario->setEmail(addslashes($data['email']));
-                    $usuario->setSenha(addslashes($data['senha']));
+                        $usuario = new Doador();
+                        $usuario->setNome(addslashes($data['nome']));
+                        $usuario->setEmail(addslashes($data['email']));
+                        $usuario->setSenha(addslashes($data['senha']));
+                        $usuario->setCpf(addslashes($data['cpf']));
 
-                    if(DoadorDao::insertUser($usuario)){
-                        $array['usuario'] = $usuario->getId();
+                        if(DoadorDao::insertUser($usuario)){
+                            $array['usuario'] = $usuario->getId();
 
-                        parent::setResponseStatus(201);
-                        $array['success'] = 'Cadastro realizado';
+                            parent::setResponseStatus(201);
+                            $array['success'] = 'Cadastro realizado';
+                        }else{
+                            parent::setResponseStatus(203);
+                            $array['error'] = "Este e-mail ou CPF já existe na base de dados";
+                        }
+
                     }else{
                         parent::setResponseStatus(203);
-                        $array['error'] = "Este e-mail já existe na base de dados";
+                        $array['error'] = "O e-mail enviado não é válido";
                     }
 
-                }else{
-                    parent::setResponseStatus(204);
-                    $array['error'] = "O e-mail enviado não é válido";
-                }
-
             }else{
-                parent::setResponseStatus(204);
-                $array['error'] = "Ops! Algum campo não foi preenchido";
+                $array['error'] = "Método de requisição indisponível";
             }
 
         }else{
-            parent::setResponseStatus(400);
-            $array['error'] = "Método de requisição indisponível";
+            parent::setResponseStatus(203);
+            $array['error'] = "Algum campo não foi preenchido";
         }
 
         parent::returnJson($array);
@@ -209,9 +210,11 @@ class DoadorController extends Controller {
                     $array['isMe'] = DoadorDao::isMe($logedDoador->getLogedUser(), $args['id']);
 
                     if($array['isMe'] == true){
+
                         if(!empty($data['nome'])){
                             $mudar['nome'] = $data['nome'];
                         }
+
                         if(!empty($data['email'])){
                             if(filter_var($data['email'], FILTER_VALIDATE_EMAIL)){
                                 if(DoadorDao::emailValidation($data['email'])){
@@ -223,6 +226,19 @@ class DoadorController extends Controller {
                                 $array['error'] = "Digite um e-mail válido";
                             }
                         }
+
+                        if(!empty($data['cpf'])){
+                            if(filter_var($data['cpf'], FILTER_SANITIZE_STRING)){
+                                if(DoadorDao::cpfValidation($data['cpf'])){
+                                    $mudar['cpf'] = addslashes($data['cpf']);
+                                }else{
+                                    $array['error'] = "Este CPF já existe na base de dados";
+                                }
+                            }else{
+                                $array['error'] = "Este e-mail já existe na base de dados";
+                            }
+                        }
+
                         if(!empty($data['senha'])){
                             $mudar['senha'] = password_hash(addslashes($data['senha']), PASSWORD_DEFAULT);
                         }
@@ -231,26 +247,27 @@ class DoadorController extends Controller {
 
                             $array['update'] = "Usuario alterado com sucesso";
                         }else{
-                            parent::setResponseStatus(404);
+                            parent::setResponseStatus(203);
                             $array['error'] = "Usuário não existe na base de dados";
                         }
+
                     }else{
-                        parent::setResponseStatus(401);
+                        parent::setResponseStatus(203);
                         $array['error'] = "Você não tem permissão para alterar este usuário.";
                     }
 
                 }else{
-                    parent::setResponseStatus(401);
+                    parent::setResponseStatus(203);
                     $array['error'] = "Acesso negado";
                 }
 
             }else{
-                parent::setResponseStatus(404);
+                parent::setResponseStatus(203);
                 $array['error'] = "Método indisponível";
             }
 
         }else{
-            parent::setResponseStatus(401);
+            parent::setResponseStatus(203);
             $array['error'] = "Acesso negado";
         }
 
@@ -266,43 +283,49 @@ class DoadorController extends Controller {
         $metodo = parent::getMethodRequisition();
         $data = parent::getRequestData();
 
-        if(!empty($data['jwt']) && $metodo == "DELETE"){
+        if(!empty($data['jwt'])){
 
             $logedDoador = DoadorDao::validateJwt($data['jwt']);
 
-            if($logedDoador){
+            if($metodo == "DELETE"){
 
-                $logedUser = array('id' => $logedDoador->getLogedUser(), 'nome' => $logedDoador->getNome());
+                if($logedDoador){
 
-                $array['logedUser'] = $logedUser;
+                    $logedUser = array('id' => $logedDoador->getLogedUser(), 'nome' => $logedDoador->getNome());
 
-                $array['loged'] = true;
+                    $array['logedUser'] = $logedUser;
 
-                $array['isMe'] = DoadorDao::isMe($logedDoador->getLogedUser(), $args['id']);
+                    $array['loged'] = true;
 
-                if($array['isMe'] == true){
+                    $array['isMe'] = DoadorDao::isMe($logedDoador->getLogedUser(), $args['id']);
 
-                    if(DoadorDao::deleteUser($args['id']) == true){
-                        $array['id'] = $args['id'];
-                        $array['delete'] = "Usuário excluído com sucesso";
+                    if($array['isMe'] == true){
+
+                        if(DoadorDao::deleteUser($args['id']) == true){
+                            $array['id'] = $args['id'];
+                            $array['delete'] = "Usuário excluído com sucesso";
+                        }else{
+                            parent::setResponseStatus(203);
+                            $array['error'] = "Usuário não existe na base de dados";
+                        }
+
                     }else{
-                        parent::setResponseStatus(404);
-                        $array['error'] = "Usuário não existe na base de dados";
+                        parent::setResponseStatus(203);
+                        $array['error'] = "Você não tem permissão para alterar este usuário.";
                     }
 
                 }else{
-                    parent::setResponseStatus(401);
-                    $array['error'] = "Você não tem permissão para alterar este usuário.";
+                    parent::setResponseStatus(203);
+                    $array['error'] = "Acesso negado";
                 }
-
             }else{
-                parent::setResponseStatus(401);
-                $array['error'] = "Acesso negado";
+                parent::setResponseStatus(203);
+                $array['error'] = "Método de requisição indisponível";
             }
 
         }else{
-            parent::setResponseStatus(401);
-            $array['error'] = "Método indisponível";
+            parent::setResponseStatus(203);
+            $array['error'] = "Acesso negado";
         }
 
         parent::returnJson($array);
