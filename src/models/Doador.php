@@ -2,7 +2,7 @@
 namespace src\models;
 use core\Model;
 
-class Usuario extends Model{
+class Doador extends Model{
 
     private $id;
     private $nome;

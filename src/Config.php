@@ -4,12 +4,12 @@ namespace src;
 class Config {
 
     //localhost
-    /*const BASE_DIR = '/AppCasaDosPobresCaruaru/public';
+    const BASE_DIR = '/AppCasaDosPobresCaruaru/public';
     const DB_DRIVER = 'mysql';
     const DB_HOST = 'localhost';
     const DB_DATABASE = 'casadospobres';
     CONST DB_USER = 'root';
-    const DB_PASS = '';*/
+    const DB_PASS = '';
 
     //hospedagem Israel
     /*const BASE_DIR = '/israelitalo.ml/AppCasaDosPobresCaruaru/public';
@@ -20,12 +20,12 @@ class Config {
     const DB_PASS = 'Doacaocasacaruaru202)';*/
 
     //hospedagem Gustavo
-    const BASE_DIR = '/casadospobrescaruaru.ml/public';
+    /*const BASE_DIR = '/casadospobrescaruaru.ml/public';
     const DB_DRIVER = 'mysql';
     const DB_HOST = 'localhost';
     const DB_DATABASE = 'u973310926_casadospobres';
     CONST DB_USER = 'u973310926_casadospobres';
-    const DB_PASS = 'casadospobrescaruaru';
+    const DB_PASS = 'casadospobrescaruaru';*/
 
     const ERROR_CONTROLLER = 'ErrorController';
     const DEFAULT_ACTION = 'index';

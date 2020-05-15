@@ -1,13 +1,13 @@
 <?php
 namespace src\Dao;
-use src\models\Usuario;
+use src\models\Doador;
 use src\models\Jwt;
 
-class UsuarioDao {
+class DoadorDao {
 
-    public static function login(Usuario $usuario){
+    public static function login(Doador $usuario){
 
-        $sql = Usuario::pdo()->prepare("SELECT id, senha FROM usuario WHERE email = :email");
+        $sql = Doador::pdo()->prepare("SELECT id, nome, senha FROM doador WHERE email = :email");
         $sql->bindValue(":email", $usuario->getEmail());
         $sql->execute();
 
@@ -16,6 +16,7 @@ class UsuarioDao {
 
             if(password_verify($usuario->getSenha(), $info->senha)){
                 $usuario->setLogedUser($info->id);
+                $usuario->setNome($info->nome);
                 return true;
             }else{
                 return false;
@@ -27,19 +28,28 @@ class UsuarioDao {
 
     }
 
-    public static function createJwt($idLogedUser){
+    public static function createJwt($idLogedUser, $nomeLogedUser){
         $jwt = new Jwt();
-        return $jwt->create($array = array('idLogedUser' => $idLogedUser));
+        return $jwt->create($array = array('idLogedUser' => $idLogedUser, 'nomeLogedUser' => $nomeLogedUser));
     }
 
     public static function validateJwt($token){
         $jwt = new Jwt();
         $info = $jwt->validate($token);
 
-        if(isset($info->idLogedUser)){
-            $usuario = new Usuario();
-            $usuario->setLogedUser($info->idLogedUser);
-            return $usuario->getLogedUser();
+        if(isset($info->idLogedUser) && isset($info->nomeLogedUser)){
+
+            $count = self::countUserForIdName($info->idLogedUser, $info->nomeLogedUser);
+
+            if($count['total'] > 0){
+                $usuario = new Doador();
+                $usuario->setLogedUser($info->idLogedUser);
+                $usuario->setNome($info->nomeLogedUser);
+                return $usuario;
+            }else{
+                return false;
+            }
+
         }else{
             return false;
         }
@@ -50,7 +60,7 @@ class UsuarioDao {
         return ($logedUserId == $requestId) ? true : false;
     }
 
-    public static function insertUser(Usuario $usuario){
+    public static function insertUser(Doador $usuario){
 
         if(self::emailValidation($usuario->getEmail())){
 
@@ -58,13 +68,13 @@ class UsuarioDao {
 
             $usuario->setSenha(password_hash($senha, PASSWORD_DEFAULT));
 
-            $sql = Usuario::pdo()->prepare("INSERT INTO usuario (nome, email, senha) VALUES (:nome, :email, :senha)");
+            $sql = Doador::pdo()->prepare("INSERT INTO doador (nome, email, senha) VALUES (:nome, :email, :senha)");
             $sql->bindValue(":nome", $usuario->getNome());
             $sql->bindValue(":email", $usuario->getEmail());
             $sql->bindValue(":senha", $usuario->getSenha());
             $sql->execute();
 
-            $usuario->setId(Usuario::pdo()->lastInsertId());
+            $usuario->setId(Doador::pdo()->lastInsertId());
 
             return true;
 
@@ -75,7 +85,7 @@ class UsuarioDao {
 
     public static function emailValidation($email){
 
-        $sql = Usuario::pdo()->prepare("SELECT id FROM usuario WHERE email = :email");
+        $sql = Doador::pdo()->prepare("SELECT id FROM doador WHERE email = :email");
         $sql->bindValue(":email",$email);
         $sql->execute();
 
@@ -91,7 +101,7 @@ class UsuarioDao {
 
         $array = array();
 
-        $sql = Usuario::pdo()->prepare("SELECT id, nome, email FROM usuario");
+        $sql = Doador::pdo()->prepare("SELECT id, nome, email FROM doador ORDER BY id DESC");
         $sql->execute();
 
         return $array = $sql->fetchAll(\PDO::FETCH_OBJ);
@@ -100,8 +110,20 @@ class UsuarioDao {
 
     public static function countUserForId($id){
 
-        $sql = Usuario::pdo()->prepare("SELECT COUNT(*) AS total FROM usuario WHERE id = :id");
+        $sql = Doador::pdo()->prepare("SELECT COUNT(*) AS total FROM doador WHERE id = :id");
         $sql->bindValue(":id", $id);
+        $sql->execute();
+
+        return $count = $sql->fetch();
+
+    }
+
+    //Verificar se o login está recebendo o token do usuário com o mesmo id e nome. Depois acrescentar o CPF.
+    public static function countUserForIdName($id, $nome){
+
+        $sql = Doador::pdo()->prepare("SELECT COUNT(*) AS total FROM doador WHERE id = :id AND nome = :nome");
+        $sql->bindValue(":id", $id);
+        $sql->bindValue(":nome", $nome);
         $sql->execute();
 
         return $count = $sql->fetch();
@@ -116,7 +138,7 @@ class UsuarioDao {
 
         if($count['total'] > 0){
 
-            $sql = Usuario::pdo()->prepare("SELECT id, nome, email FROM usuario WHERE id = :id");
+            $sql = Doador::pdo()->prepare("SELECT id, nome, email FROM doador WHERE id = :id");
             $sql->bindValue(":id", $id);
             $sql->execute();
 
@@ -132,7 +154,7 @@ class UsuarioDao {
         $count = self::countUserForId($id);
 
         if($count['total'] > 0){
-            $sql = Usuario::pdo()->prepare("DELETE FROM usuario WHERE id = :id");
+            $sql = Doador::pdo()->prepare("DELETE FROM doador WHERE id = :id");
             $sql->bindValue(":id", $id);
             $sql->execute();
             return true;
@@ -156,8 +178,8 @@ class UsuarioDao {
 
             }
 
-            $query = "UPDATE usuario SET ".implode(',', $fileds)." WHERE id = :id";
-            $sql = Usuario::pdo()->prepare($query);
+            $query = "UPDATE doador SET ".implode(',', $fileds)." WHERE id = :id";
+            $sql = Doador::pdo()->prepare($query);
             $sql->bindValue(":id", $id);
 
             foreach($data as $key => $value){

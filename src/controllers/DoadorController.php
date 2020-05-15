@@ -2,10 +2,10 @@
 namespace src\controllers;
 
 use \core\Controller;
-use \src\models\Usuario;
-use \src\Dao\UsuarioDao;
+use \src\models\Doador;
+use \src\Dao\DoadorDao;
 
-class UsuarioController extends Controller {
+class DoadorController extends Controller {
 
     //Listando todos os usuários.
     public function index(){
@@ -17,11 +17,18 @@ class UsuarioController extends Controller {
 
         if(!empty($data['jwt'])){
 
-            if($array['logedUserId'] = UsuarioDao::validateJwt($data['jwt'])){
+            $logedDoador = DoadorDao::validateJwt($data['jwt']);
+
+            if($logedDoador){
+
+                $logedUser = array('id' => $logedDoador->getLogedUser(), 'nome' => $logedDoador->getNome());
+
+                $array['logedUser'] = $logedUser;
+
                 $array['loged'] = true;
 
                 if($method == 'GET'){
-                    $array['usuarios'] = UsuarioDao::getAllUser();
+                    $array['doadores'] = DoadorDao::getAllUser();
                 }else{
                     parent::setResponseStatus(404);
                     $array['error'] = "Método indisponível";
@@ -51,14 +58,15 @@ class UsuarioController extends Controller {
         if($metodo == "POST"){
 
             if(!empty($data['email']) && !empty($data['senha'])){
-                $usuario = new Usuario();
+                $usuario = new Doador();
                 $usuario->setEmail(addslashes($data['email']));
                 $usuario->setSenha(addslashes($data['senha']));
 
-                if(UsuarioDao::login($usuario)){
+                if(DoadorDao::login($usuario)){
                     //Gerando JTW para o id do usuário logado
                     $idLogedUser = $usuario->getLogedUser();
-                    $array['jwt'] = UsuarioDao::createJwt($idLogedUser);
+                    $nome = $usuario->getNome();
+                    $array['jwt'] = DoadorDao::createJwt($idLogedUser, $nome);
                 }else{
                     parent::setResponseStatus(403);
                     $array['error'] = "Acesso negado";
@@ -87,20 +95,26 @@ class UsuarioController extends Controller {
 
         if(!empty($data['jwt'])){
 
-            if($array['logedUserId'] = UsuarioDao::validateJwt($data['jwt'])){
+            $logedDoador = DoadorDao::validateJwt($data['jwt']);
+
+            if($logedDoador){
+
+                $logedUser = array('id' => $logedDoador->getLogedUser(), 'nome' => $logedDoador->getNome());
+
+                $array['logedUser'] = $logedUser;
 
                 $array['loged'] = true;
 
-                $array['isMe'] = UsuarioDao::isMe($array['logedUserId'], $args['id']);
+                $array['isMe'] = DoadorDao::isMe($logedDoador->getLogedUser(), $args['id']);
 
                 if($method == "GET"){
-                    $usuarios = UsuarioDao::getUser($args['id']);
+                    $usuarios = DoadorDao::getUser($args['id']);
 
                     if($usuarios){
-                        $array['usuario'] = $usuarios;
+                        $array['doador'] = $usuarios;
                     }else{
                         parent::setResponseStatus(404);
-                        $array['error'] = "Usuário não existe na base de dados";
+                        $array['error'] = "Doador não existe na base de dados";
                     }
                 }
 
@@ -132,12 +146,12 @@ class UsuarioController extends Controller {
 
                 if(filter_var($data['email'], FILTER_VALIDATE_EMAIL)){
 
-                    $usuario = new Usuario();
+                    $usuario = new Doador();
                     $usuario->setNome(addslashes($data['nome']));
                     $usuario->setEmail(addslashes($data['email']));
                     $usuario->setSenha(addslashes($data['senha']));
 
-                    if(UsuarioDao::insertUser($usuario)){
+                    if(DoadorDao::insertUser($usuario)){
                         $array['usuario'] = $usuario->getId();
 
                         parent::setResponseStatus(201);
@@ -180,22 +194,27 @@ class UsuarioController extends Controller {
 
         if(!empty($data['jwt'])){
 
+            $logedDoador = DoadorDao::validateJwt($data['jwt']);
+
             if($metodo == "PUT"){
 
-                if($array['logedUserId'] = UsuarioDao::validateJwt($data['jwt'])){
+                if($logedDoador){
+
+                    $logedUser = array('id' => $logedDoador->getLogedUser(), 'nome' => $logedDoador->getNome());
+
+                    $array['logedUser'] = $logedUser;
 
                     $array['loged'] = true;
 
-                    $array['isMe'] = UsuarioDao::isMe($array['logedUserId'], $args['id']);
+                    $array['isMe'] = DoadorDao::isMe($logedDoador->getLogedUser(), $args['id']);
 
                     if($array['isMe'] == true){
-
                         if(!empty($data['nome'])){
                             $mudar['nome'] = $data['nome'];
                         }
                         if(!empty($data['email'])){
                             if(filter_var($data['email'], FILTER_VALIDATE_EMAIL)){
-                                if(UsuarioDao::emailValidation($data['email'])){
+                                if(DoadorDao::emailValidation($data['email'])){
                                     $mudar['email'] = addslashes($data['email']);
                                 }else{
                                     $array['error'] = "Este e-mail já existe na base de dados";
@@ -208,14 +227,13 @@ class UsuarioController extends Controller {
                             $mudar['senha'] = password_hash(addslashes($data['senha']), PASSWORD_DEFAULT);
                         }
 
-                        if(UsuarioDao::updateUser($args['id'], $mudar)){
+                        if(DoadorDao::updateUser($args['id'], $mudar)){
 
                             $array['update'] = "Usuario alterado com sucesso";
                         }else{
                             parent::setResponseStatus(404);
                             $array['error'] = "Usuário não existe na base de dados";
                         }
-
                     }else{
                         parent::setResponseStatus(401);
                         $array['error'] = "Você não tem permissão para alterar este usuário.";
@@ -250,15 +268,21 @@ class UsuarioController extends Controller {
 
         if(!empty($data['jwt']) && $metodo == "DELETE"){
 
-            if($array['logedUserId'] = UsuarioDao::validateJwt($data['jwt'])){
+            $logedDoador = DoadorDao::validateJwt($data['jwt']);
+
+            if($logedDoador){
+
+                $logedUser = array('id' => $logedDoador->getLogedUser(), 'nome' => $logedDoador->getNome());
+
+                $array['logedUser'] = $logedUser;
 
                 $array['loged'] = true;
 
-                $array['isMe'] = UsuarioDao::isMe($array['logedUserId'], $args['id']);
+                $array['isMe'] = DoadorDao::isMe($logedDoador->getLogedUser(), $args['id']);
 
                 if($array['isMe'] == true){
 
-                    if(UsuarioDao::deleteUser($args['id']) == true){
+                    if(DoadorDao::deleteUser($args['id']) == true){
                         $array['id'] = $args['id'];
                         $array['delete'] = "Usuário excluído com sucesso";
                     }else{
