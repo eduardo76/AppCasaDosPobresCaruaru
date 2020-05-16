@@ -14,6 +14,8 @@ $router->get('/', 'ApiController@index');
 
 //
 
-//Doações
-
+//Agendamento Doações
+$router->post('/doacao/agendar', 'AgendarDoacaoController@insertAgendamentoDoacao');
 //
+
+//Doações Financeiras
