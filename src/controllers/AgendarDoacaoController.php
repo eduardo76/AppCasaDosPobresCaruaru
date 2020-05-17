@@ -11,12 +11,12 @@ use \src\Dao\TipoDoacaoDao;
 
 class AgendarDoacaoController extends Controller {
 
-    public static function insertAgendamentoDoacao(){
+    public function insertAgendamentoDoacao(){
 
         $array = array('loged' => false);
 
         $metodo = parent::getMethodRequisition();
-        $data = (new \core\Controller)->getRequestData();
+        $data = parent::getRequestData();
 
         if(!empty($data['jwt'])){
 
@@ -57,9 +57,8 @@ class AgendarDoacaoController extends Controller {
                                     $doacao->setLugar(addslashes($data['lugar']));
                                     $doacao->setIdTipoDocao(addslashes($data['tipoDoacao']));
 
-                                    //inserir Agendamento de doação no banco de dados
-
                                     if(AgendarDoacaoDao::insertAgendarDoacao($doacao)){
+
                                         $array['agendamento'] = array(
                                             'id' => $doacao->getId(),
                                             'item' => $doacao->getItem(),
@@ -72,6 +71,7 @@ class AgendarDoacaoController extends Controller {
                                             'idTipoDoacao' => $doacao->getIdTipoDocao(),
                                             'TipoDoacao' => $tipoDoacao->getDescricao()
                                         );
+
                                     }else{
                                         parent::setResponseStatus(203);
                                         $array['error'] = "Erro ao tentar inserir agendamento";
@@ -105,6 +105,292 @@ class AgendarDoacaoController extends Controller {
             }else{
                 parent::setResponseStatus(203);
                 $array['error'] = "Método indisponível";
+            }
+
+        }else{
+            parent::setResponseStatus(203);
+            $array['error'] = "Acesso negado";
+        }
+
+        parent::returnJson($array);
+
+    }
+
+    public function getAllAgendamentos(){
+
+        $array = array('loged' => false);
+
+        $metodo = parent::getMethodRequisition();
+        $data = parent::getRequestData();
+
+        if(!empty($data['jwt'])){
+
+            $logedDoador = DoadorDao::validateJwt($data['jwt']);
+
+            if($metodo == "GET"){
+
+                if($logedDoador){
+
+                    $logedUser = array('id' => $logedDoador->getLogedUser(), 'nome' => $logedDoador->getNome());
+
+                    $array['logedUser'] = $logedUser;
+
+                    $array['loged'] = true;
+
+                    $array['agendamentos'] = AgendarDoacaoDao::getAllAgendamentos();
+
+                }else{
+                    parent::setResponseStatus(203);
+                    $array['error'] = "Acesso negado";
+                }
+
+            }else{
+                parent::setResponseStatus(203);
+                $array['error'] = "Método indisponível";
+            }
+        }else{
+            parent::setResponseStatus(203);
+            $array['error'] = "Acesso negado";
+        }
+
+        parent::returnJson($array);
+
+    }
+
+    public function getAgendamentosForDoadorAdm($args = array()){
+
+        $array = array('loged' => false);
+
+        $metodo = parent::getMethodRequisition();
+        $data = parent::getRequestData();
+
+        if(!empty($data['jwt'])){
+
+            $logedDoador = DoadorDao::validateJwt($data['jwt']);
+
+            if($metodo == "GET"){
+
+                if($logedDoador){
+
+                    $logedUser = array('id' => $logedDoador->getLogedUser(), 'nome' => $logedDoador->getNome());
+
+                    $array['logedUser'] = $logedUser;
+
+                    $array['loged'] = true;
+
+                    $array['agendamentos'] = AgendarDoacaoDao::getAgendamentoForDoador($args['id']);
+
+                }else{
+                    parent::setResponseStatus(203);
+                    $array['error'] = "Acesso negado";
+                }
+
+            }else{
+                parent::setResponseStatus(203);
+                $array['error'] = "Método indisponível";
+            }
+
+        }else{
+            parent::setResponseStatus(203);
+            $array['error'] = "Acesso negado";
+        }
+
+        parent::returnJson($array);
+
+    }
+
+    public function getAgendamentosForDoador($args = array()){
+
+        $array = array('loged' => false);
+
+        $metodo = parent::getMethodRequisition();
+        $data = parent::getRequestData();
+
+        if(!empty($data['jwt'])){
+
+            $logedDoador = DoadorDao::validateJwt($data['jwt']);
+
+            if($metodo == "GET"){
+
+                if($logedDoador){
+
+                    $logedUser = array('id' => $logedDoador->getLogedUser(), 'nome' => $logedDoador->getNome());
+
+                    $array['logedUser'] = $logedUser;
+
+                    $array['loged'] = true;
+
+                    $array['isMe'] = DoadorDao::isMe($logedUser['id'], $args['id']);
+
+                    if($array['isMe'] == true){
+                        $array['agendamentos'] = AgendarDoacaoDao::getAgendamentoForDoador($args['id']);
+                    }
+                    else{
+                        parent::setResponseStatus(203);
+                        $array['error'] = "Você só pode visualizar seus próprios agendamentos";
+                    }
+                }else{
+                    parent::setResponseStatus(203);
+                    $array['error'] = "Acesso negado";
+                }
+
+            }else{
+                parent::setResponseStatus(203);
+                $array['error'] = "Método indisponível";
+            }
+
+        }else{
+            parent::setResponseStatus(203);
+            $array['error'] = "Acesso negado";
+        }
+
+        parent::returnJson($array);
+
+    }
+
+    public function updateAgendamentoDoacao($args = array()){
+
+        $mudar = array();
+        $array = array('loged' => false);
+
+        $metodo = parent::getMethodRequisition();
+
+        $data = parent::getRequestData();
+
+        if(!empty($data['jwt'])){
+
+            $logedDoador = DoadorDao::validateJwt($data['jwt']);
+
+            if($metodo == "PUT"){
+
+                if($logedDoador){
+
+                    $logedUser = array('id' => $logedDoador->getLogedUser(), 'nome' => $logedDoador->getNome());
+
+                    $array['logedUser'] = $logedUser;
+
+                    $array['loged'] = true;
+
+                    if(!empty($data['item'])){
+                        $mudar['item'] = addslashes($data['item']);
+                    }
+
+                    /*if(!empty($data['doador'])){
+                        $mudar['doador'] = addslashes($data['doador']);
+                    }*/
+
+                    if(!empty($data['quantidade'])){
+                        if(filter_var($data['quantidade'], FILTER_SANITIZE_NUMBER_INT)){
+                            $mudar['quantidade'] = $data['quantidade'];
+                        }else{
+                            $array['error'] = "Digite um valor inteiro para a quantidade";
+                        }
+                    }
+
+                    if(!empty($data['data'])){
+                        $dataArgs = explode('/', $data['data']);
+                        $mudar['date'] = $dataArgs[2].'-'.$dataArgs[1].'-'.$dataArgs[0];
+                    }
+
+                    if(!empty($data['hora'])){
+                        $mudar['hora'] = addslashes($data['hora']);
+                    }
+
+                    if(!empty($data['lugar'])){
+                        $mudar['lugar'] = addslashes($data['lugar']);
+                    }
+
+                    if(!empty($data['tipoDoacao'])){
+                        if($tipoDoacao = TipoDoacaoDao::verifyTipoDoacao($data['tipoDoacao'])){
+                            $mudar['id_tipo_doacao'] = $tipoDoacao->getId();
+                        }else{
+                            $array['error'] = "Tipo de doação não disponível";
+                        }
+                    }
+
+                    if(AgendarDoacaoDao::updateDoacao($args['id'], $mudar , $logedUser['id'])){
+
+                        if(!isset($array['error'])){
+                            $array['update'] = "Agendamento alterada com sucesso";
+
+                            $array['agendamento'] = AgendarDoacaoDao::getAgendamentoForDoador($args['id']);
+                        }else{
+                            $array['error'] = "Erro ao alterar agendamento";
+                        }
+
+                    }else{
+                        parent::setResponseStatus(203);
+                        $array['error'] = "Você só pode alterar suas próprias doações";
+                    }
+
+                }else{
+                    parent::setResponseStatus(203);
+                    $array['error'] = "Acesso negado";
+                }
+
+            }else{
+                parent::setResponseStatus(203);
+                $array['error'] = "Método indisponível";
+            }
+
+        }else{
+            parent::setResponseStatus(203);
+            $array['error'] = "Acesso negado";
+        }
+
+
+        parent::returnJson($array);
+
+    }
+
+    public function deleteAgendamentoDoacao($args = array()){
+
+        $array = array('loged' => false);
+
+        $metodo = parent::getMethodRequisition();
+        $data = parent::getRequestData();
+
+        if(!empty($data['jwt'])){
+
+            $logedDoador = DoadorDao::validateJwt($data['jwt']);
+
+            if($metodo == "DELETE"){
+
+                if($logedDoador){
+
+                    $logedUser = array('id' => $logedDoador->getLogedUser(), 'nome' => $logedDoador->getNome());
+
+                    $array['logedUser'] = $logedUser;
+
+                    $array['loged'] = true;
+
+                    $countAgendamentoForId = AgendarDoacaoDao::countDoacaoForId($args['id'], $logedUser['id']);
+
+                    if($countAgendamentoForId['total'] > 0){
+
+                        $array['isMe'] = true;
+
+                        if(AgendarDoacaoDao::deleteAgendamentoDoacao($args['id'])){
+                            $array['delete'] = "Agendamento excluído com sucesso";
+                        }else{
+                            parent::setResponseStatus(203);
+                            $array['error'] = "Agendamento não existe na base de dados";
+                        }
+
+                    }else{
+                        $array['isMe'] = false;
+                        parent::setResponseStatus(203);
+                        $array['error'] = "Você não tem permissão para excluir este agendamento";
+                    }
+
+                }else{
+                    parent::setResponseStatus(203);
+                    $array['error'] = "Acesso negado";
+                }
+
+            }else{
+                parent::setResponseStatus(203);
+                $array['error'] = "Método de requisição indisponível";
             }
 
         }else{

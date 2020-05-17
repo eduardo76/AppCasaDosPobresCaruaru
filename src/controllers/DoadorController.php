@@ -311,7 +311,7 @@ class DoadorController extends Controller {
 
                     }else{
                         parent::setResponseStatus(203);
-                        $array['error'] = "Você não tem permissão para alterar este usuário.";
+                        $array['error'] = "Você não tem permissão para excluir este usuário";
                     }
 
                 }else{
