@@ -1,34 +1,67 @@
 # AppCasaDosPobresCaruaru
 Aplicativo para auxiliar nas doações à Casa dos Pobres de Caruaru
 
-Endereço base: http://localhost/AppCasaDosPobresCaruaru/public
+Endereço base: http://casadospobrescaruaru.ml/public
 
 OBS: a pasta do projeto deve estar na pasta htdocs da posta XAMP
 
          -- Rotas para uso da API em ambiente localhost --
 
+Login de acesso à API:
 
-Listar todos os usuários registrados na base de dados:
+    Metodo: POST, Rota: /doador/login
+    Exemplo: http://casadospobrescaruaru.ml/public/doador/login
 
-    Metodo: GET, Rota: /usuarios
-    Exemplo: http://localhost/AppCasaDosPobresCaruaru/public/usuarios
+Listar todos os doadores registrados na base de dados:
 
-Listar um usuário específico: 
+    Metodo: GET, Rota: /doadores
+    Exemplo: http://casadospobrescaruaru.ml/public/doadores
 
-    Metodo: GET, Rota: /usuarios/id
+Listar um doador específico: 
 
-Cadastrar um novo usuário: 
+    Metodo: GET, Rota: /doador/id
 
-    Metodo: POST, Rota: /usuarios/new
+Cadastrar um novo doador: 
 
-Deletar um usuário:
+    Metodo: POST, Rota: /doador/new
 
-    Metodo: DELETE, Rota: /usuarios/id/delete
+Deletar um doador:
 
-Alterar um usuário:
+    Metodo: DELETE, Rota: /doador/id/delete
 
-    Metodo: PUT, Rota: /usuarios/id/update
+Alterar um doador:
+
+    Metodo: PUT, Rota: /doador/id/update
     
-Listar e registrar doações na base de dados:
+    
+--> Agendamento de Doações <--
 
+    Exemplo: http://casadospobrescaruaru.ml/public/doacao/agendar
+    
+Registrar agendamento de doações na base de dados:
+
+    Metodo: POST, Rota: /doacao/agendar
+    
+Listar todas as doações cadastradas como ADM:
+
+    Metodo: GET, Rota: /doacao/agendamentos/adm
+
+Listar agendamento de um usuário específico como ADM:
+
+    Metodo: GET, Rota: /doacao/agendamentos/doador/id/adm
+
+Listar agendamento de um usuário específico, como usuário comum:
+
+    Metodo: GET, Rota: /doacao/agendamentos/doador/id
+
+Alterar um agendamento já cadastrado:
+
+    Metodo: PUT, Rota: /doacao/agendamentos/id/update
+    
+Excluir um agendamento já cadastrado:
+
+    Metodo: DELETE, Rota: /doacao/agendamentos/id/delete
+
+ --> Doações pelo PagSeguro <--
+ 
                         ->Em Desenvolvimento<-
