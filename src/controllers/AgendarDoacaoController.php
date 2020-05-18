@@ -37,49 +37,57 @@ class AgendarDoacaoController extends Controller {
                     if($array['isMe'] == true){
 
                         if(!empty($data['item']) && !empty($data['doador']) && !empty($data['quantidade']) && !empty($data['data'])
-                            && !empty($data['hora']) && !empty($data['lugar']) && !empty($data['tipoDoacao'])){
+                            && !empty($data['hora']) && !empty($data['lugar']) && !empty($data['tipoDoacao']) && !empty($data['telefone'])){
 
                             if(filter_var($data['quantidade'], FILTER_SANITIZE_NUMBER_INT)){
 
-                                if($tipoDoacao = TipoDoacaoDao::verifyTipoDoacao($data['tipoDoacao'])){
+                                if(filter_var($data['telefone'], FILTER_SANITIZE_NUMBER_INT)){
 
-                                    $dataDoacao = explode('/', $data['data']);
+                                    if($tipoDoacao = TipoDoacaoDao::verifyTipoDoacao($data['tipoDoacao'])){
 
-                                    $dataDoacaoToBd = $dataDoacao[2].'-'.$dataDoacao[1].'-'.$dataDoacao[0];
+                                        $dataDoacao = explode('/', $data['data']);
 
-                                    $doacao = new AgendarDoacao();
+                                        $dataDoacaoToBd = $dataDoacao[2].'-'.$dataDoacao[1].'-'.$dataDoacao[0];
 
-                                    $doacao->setItem(addslashes($data['item']));
-                                    $doacao->setIdDoador($logedUser['id']);
-                                    $doacao->setQuantidade(addslashes($data['quantidade']));
-                                    $doacao->setData($dataDoacaoToBd);
-                                    $doacao->setHora(addslashes($data['hora']));
-                                    $doacao->setLugar(addslashes($data['lugar']));
-                                    $doacao->setIdTipoDocao(addslashes($data['tipoDoacao']));
+                                        $doacao = new AgendarDoacao();
 
-                                    if(AgendarDoacaoDao::insertAgendarDoacao($doacao)){
+                                        $doacao->setItem(addslashes($data['item']));
+                                        $doacao->setIdDoador($logedUser['id']);
+                                        $doacao->setQuantidade(addslashes($data['quantidade']));
+                                        $doacao->setData($dataDoacaoToBd);
+                                        $doacao->setHora(addslashes($data['hora']));
+                                        $doacao->setLugar(addslashes($data['lugar']));
+                                        $doacao->setIdTipoDocao(addslashes($data['tipoDoacao']));
+                                        $doacao->setTelefone(addslashes($data['telefone']));
 
-                                        $array['agendamento'] = array(
-                                            'id' => $doacao->getId(),
-                                            'item' => $doacao->getItem(),
-                                            'idDoador' => $doacao->getIdDoador(),
-                                            'doador' => $logedUser['nome'],
-                                            'quantidade' => $doacao->getQuantidade(),
-                                            'data' => date('d/m/Y', strtotime($doacao->getData())),
-                                            'hora' => $doacao->getHora(),
-                                            'lugar' => $doacao->getLugar(),
-                                            'idTipoDoacao' => $doacao->getIdTipoDocao(),
-                                            'TipoDoacao' => $tipoDoacao->getDescricao()
-                                        );
+                                        if(AgendarDoacaoDao::insertAgendarDoacao($doacao)){
+
+                                            $array['agendamento'] = array(
+                                                'id' => $doacao->getId(),
+                                                'item' => $doacao->getItem(),
+                                                'idDoador' => $doacao->getIdDoador(),
+                                                'doador' => $logedUser['nome'],
+                                                'quantidade' => $doacao->getQuantidade(),
+                                                'data' => date('d/m/Y', strtotime($doacao->getData())),
+                                                'hora' => $doacao->getHora(),
+                                                'lugar' => $doacao->getLugar(),
+                                                'idTipoDoacao' => $doacao->getIdTipoDocao(),
+                                                'TipoDoacao' => $tipoDoacao->getDescricao(),
+                                                'telefone' => $doacao->getTelefone()
+                                            );
+
+                                        }else{
+                                            parent::setResponseStatus(203);
+                                            $array['error'] = "Erro ao tentar inserir agendamento";
+                                        }
 
                                     }else{
                                         parent::setResponseStatus(203);
-                                        $array['error'] = "Erro ao tentar inserir agendamento";
+                                        $array['error'] = "Tipo de doação não disponível";
                                     }
-
                                 }else{
                                     parent::setResponseStatus(203);
-                                    $array['error'] = "Tipo de doação não disponível";
+                                    $array['error'] = "Digite um telefone válido";
                                 }
 
                             }else{
@@ -139,6 +147,12 @@ class AgendarDoacaoController extends Controller {
 
                     $array['agendamentos'] = AgendarDoacaoDao::getAllAgendamentos();
 
+                    if(count($array['agendamentos']) > 0){
+                        foreach ($array['agendamentos'] as $agendamento){
+                            $agendamento->date = date('d/m/Y', strtotime($agendamento->date));
+                        }
+                    }
+
                 }else{
                     parent::setResponseStatus(203);
                     $array['error'] = "Acesso negado";
@@ -179,6 +193,12 @@ class AgendarDoacaoController extends Controller {
                     $array['loged'] = true;
 
                     $array['agendamentos'] = AgendarDoacaoDao::getAgendamentoForDoador($args['id']);
+
+                    if(count($array['agendamentos']) > 0){
+                        foreach ($array['agendamentos'] as $agendamento){
+                            $agendamento->date = date('d/m/Y', strtotime($agendamento->date));
+                        }
+                    }
 
                 }else{
                     parent::setResponseStatus(203);
@@ -224,6 +244,12 @@ class AgendarDoacaoController extends Controller {
 
                     if($array['isMe'] == true){
                         $array['agendamentos'] = AgendarDoacaoDao::getAgendamentoForDoador($args['id']);
+
+                        if(count($array['agendamentos']) > 0){
+                            foreach ($array['agendamentos'] as $agendamento){
+                                $agendamento->date = date('d/m/Y', strtotime($agendamento->date));
+                            }
+                        }
                     }
                     else{
                         parent::setResponseStatus(203);
@@ -308,12 +334,18 @@ class AgendarDoacaoController extends Controller {
                         }
                     }
 
+                    if(!empty($data['telefone'])){
+                        $mudar['telefone'] = addslashes($data['telefone']);
+                    }
+
                     if(AgendarDoacaoDao::updateDoacao($args['id'], $mudar , $logedUser['id'])){
 
                         if(!isset($array['error'])){
                             $array['update'] = "Agendamento alterada com sucesso";
 
                             $array['agendamento'] = AgendarDoacaoDao::getAgendamentoForDoador($args['id']);
+                            $array['agendamento'][0]->date = date('d/m/Y', strtotime($array['agendamento'][0]->date));
+
                         }else{
                             $array['error'] = "Erro ao alterar agendamento";
                         }
@@ -337,7 +369,6 @@ class AgendarDoacaoController extends Controller {
             parent::setResponseStatus(203);
             $array['error'] = "Acesso negado";
         }
-
 
         parent::returnJson($array);
 

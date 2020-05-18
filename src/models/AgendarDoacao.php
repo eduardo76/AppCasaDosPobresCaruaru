@@ -13,6 +13,7 @@ class AgendarDoacao extends Model {
     private $hora;
     private $lugar;
     private $idTipoDocao;
+    private $telefone;
 
     public function getId()
     {
@@ -92,6 +93,16 @@ class AgendarDoacao extends Model {
     public function setIdTipoDocao($idTipoDocao)
     {
         $this->idTipoDocao = $idTipoDocao;
+    }
+
+    public function getTelefone()
+    {
+        return $this->telefone;
+    }
+
+    public function setTelefone($telefone)
+    {
+        $this->telefone = $telefone;
     }
 
 }
