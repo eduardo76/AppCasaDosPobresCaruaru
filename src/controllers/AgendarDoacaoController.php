@@ -343,7 +343,7 @@ class AgendarDoacaoController extends Controller {
                         if(!isset($array['error'])){
                             $array['update'] = "Agendamento alterada com sucesso";
 
-                            $array['agendamento'] = AgendarDoacaoDao::getAgendamentoForDoador($args['id']);
+                            $array['agendamento'] = AgendarDoacaoDao::getAgendamentoForId($args['id']);
                             $array['agendamento'][0]->date = date('d/m/Y', strtotime($array['agendamento'][0]->date));
 
                         }else{

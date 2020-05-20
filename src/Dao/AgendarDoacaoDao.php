@@ -59,6 +59,23 @@ class AgendarDoacaoDao {
 
     }
 
+    public  static function getAgendamentoForId($id){
+
+        $array = array();
+
+        $sql = AgendarDoacao::pdo()->prepare("SELECT *, 
+                                                      (select nome from doador WHERE doador.id = a.id_doador) as doador,
+                                                      (select descricao from tipo_da_doacao t WHERE t.id_tipo_doacao = a.id_tipo_doacao)
+                                                      as tipo_doacao 
+                                                      FROM agendamento_doacao a WHERE a.id_agendamento = :id ORDER BY id_agendamento DESC");
+
+        $sql->bindValue(":id", $id);
+        $sql->execute();
+
+        return $array = $sql->fetchAll(\PDO::FETCH_OBJ);
+
+    }
+
     public static function updateDoacao($id, $data, $logedUserId){
 
         $fields = array();
