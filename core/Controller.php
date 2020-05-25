@@ -14,10 +14,6 @@ class Controller {
     public function __construct() {
       $this->request = new Request();
       $this->response = new Response();
-
-      if (Config::USE_JWT) {
-        $this->validateJWT();
-      }
     }
 
     public function validateJWT() {

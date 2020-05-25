@@ -12,6 +12,8 @@ class DoadorController extends Controller {
     //Listando todos os usuários.
     public function index(){
 
+      $this->validateJWT();
+
       $dados['loged'] = true;
       $dados['logedUser'] = $this->logedUser;
       $dados['doadores'] = DoadorDao::getAllUser();
@@ -62,6 +64,7 @@ class DoadorController extends Controller {
 
     //Listar usuário pelo id.
     public function getUserForId($args = array()){
+        $this->validateJWT();
 
         $usuario = DoadorDao::getUser($args['id']);
 
