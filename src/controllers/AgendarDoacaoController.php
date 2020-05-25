@@ -15,8 +15,8 @@ class AgendarDoacaoController extends Controller {
 
         $array = array('loged' => false);
 
-        $metodo = parent::getMethodRequisition();
-        $data = parent::getRequestData();
+        $metodo = $this->request->getMethod();
+        $data = $this->request->all();
 
         if(!empty($data['jwt'])){
 
@@ -128,8 +128,8 @@ class AgendarDoacaoController extends Controller {
 
         $array = array('loged' => false);
 
-        $metodo = parent::getMethodRequisition();
-        $data = parent::getRequestData();
+        $metodo = $this->request->getMethod();
+        $data = $this->request->all();
 
         if(!empty($data['jwt'])){
 
@@ -175,8 +175,8 @@ class AgendarDoacaoController extends Controller {
 
         $array = array('loged' => false);
 
-        $metodo = parent::getMethodRequisition();
-        $data = parent::getRequestData();
+        $metodo = $this->request->getMethod();
+        $data = $this->request->all();
 
         if(!empty($data['jwt'])){
 
@@ -223,8 +223,8 @@ class AgendarDoacaoController extends Controller {
 
         $array = array('loged' => false);
 
-        $metodo = parent::getMethodRequisition();
-        $data = parent::getRequestData();
+        $metodo = $this->request->getMethod();
+        $data = $this->request->all();
 
         if(!empty($data['jwt'])){
 
@@ -279,9 +279,8 @@ class AgendarDoacaoController extends Controller {
         $mudar = array();
         $array = array('loged' => false);
 
-        $metodo = parent::getMethodRequisition();
-
-        $data = parent::getRequestData();
+        $metodo = $this->request->getMethod();
+        $data = $this->request->all();
 
         if(!empty($data['jwt'])){
 
@@ -378,8 +377,8 @@ class AgendarDoacaoController extends Controller {
 
         $array = array('loged' => false);
 
-        $metodo = parent::getMethodRequisition();
-        $data = parent::getRequestData();
+        $metodo = $this->request->getMethod();
+        $data = $this->request->all();
 
         if(!empty($data['jwt'])){
 

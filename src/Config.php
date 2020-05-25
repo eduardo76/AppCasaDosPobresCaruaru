@@ -9,7 +9,8 @@ class Config {
     const DB_HOST = 'localhost';
     const DB_DATABASE = 'casadospobres';
     CONST DB_USER = 'root';
-    const DB_PASS = '';
+    const DB_PASS = 'root';
+    const USE_JWT = true;
 
     //hospedagem Israel
     /*const BASE_DIR = '/israelitalo.ml/casadospobrescaruaru/public';

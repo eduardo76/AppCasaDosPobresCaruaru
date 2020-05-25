@@ -5,9 +5,15 @@ use \src\Config;
 
 class RouterBase {
 
+    protected $request;
+
+    public function __construct() {
+      $this->request = new Request();
+    }
+
     public function run($routes) {
-        $method = Request::getMethod();
-        $url = Request::getUrl();
+        $method = $this->request->getMethod();
+        $url = $this->request->getUrl();
 
         // Define os itens padrão
         $controller = Config::ERROR_CONTROLLER;

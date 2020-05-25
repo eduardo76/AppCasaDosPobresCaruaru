@@ -1,9 +1,10 @@
 <?php
 namespace src\controllers;
 
+use core\Request;
 use \core\Controller;
-use \src\models\Doador;
 use \src\Dao\DoadorDao;
+use \src\models\Doador;
 use function Sodium\add;
 
 class DoadorController extends Controller {
@@ -11,41 +12,11 @@ class DoadorController extends Controller {
     //Listando todos os usuários.
     public function index(){
 
-        $array = array('loged' => false);
+      $dados['loged'] = true;
+      $dados['logedUser'] = $this->logedUser;
+      $dados['doadores'] = DoadorDao::getAllUser();
 
-        $method = parent::getMethodRequisition();
-        $data = parent::getRequestData();
-
-        if(!empty($data['jwt'])){
-
-            $logedDoador = DoadorDao::validateJwt($data['jwt']);
-
-            if($logedDoador){
-
-                $logedUser = array('id' => $logedDoador->getLogedUser(), 'nome' => $logedDoador->getNome());
-
-                $array['logedUser'] = $logedUser;
-
-                $array['loged'] = true;
-
-                if($method == 'GET'){
-                    $array['doadores'] = DoadorDao::getAllUser();
-                }else{
-                    parent::setResponseStatus(404);
-                    $array['error'] = "Método indisponível";
-                }
-
-            }else{
-                parent::setResponseStatus(401);
-                $array['error'] = "Acesso negado";
-            }
-
-        }else{
-            parent::setResponseStatus(401);
-            $array['error'] = "Acesso negado";
-        }
-
-        parent::returnJson($array);
+      $this->response->json($dados);
 
     }//metodo
 
@@ -53,8 +24,11 @@ class DoadorController extends Controller {
 
         $array = array();
 
-        $metodo = parent::getMethodRequisition();
-        $data = parent::getRequestData();
+        // $metodo = parent::getMethodRequisition();
+        // $data = parent::getRequestData();
+
+        $metodo = $this->request->getMethod();
+        $data = $this->request->all();
 
         if($metodo == "POST"){
 
@@ -89,47 +63,20 @@ class DoadorController extends Controller {
     //Listar usuário pelo id.
     public function getUserForId($args = array()){
 
-        $array = array('loged' => 'false');
+        $usuario = DoadorDao::getUser($args['id']);
 
-        $method = parent::getMethodRequisition();
-        $data = parent::getRequestData();
+        if($usuario){
+          $dados = [
+            'loged'     => true,
+            'logedUser' => $this->logedUser,
+            'isMe'      => DoadorDao::isMe($this->logedUser['id'], $args['id']),
+            'doador'    => $usuario
+          ];
 
-        if(!empty($data['jwt'])){
-
-            $logedDoador = DoadorDao::validateJwt($data['jwt']);
-
-            if($logedDoador){
-
-                $logedUser = array('id' => $logedDoador->getLogedUser(), 'nome' => $logedDoador->getNome());
-
-                $array['logedUser'] = $logedUser;
-
-                $array['loged'] = true;
-
-                $array['isMe'] = DoadorDao::isMe($logedDoador->getLogedUser(), $args['id']);
-
-                if($method == "GET"){
-                    $usuarios = DoadorDao::getUser($args['id']);
-
-                    if($usuarios){
-                        $array['doador'] = $usuarios;
-                    }else{
-                        parent::setResponseStatus(404);
-                        $array['error'] = "Doador não existe na base de dados";
-                    }
-                }
-
-            }else{
-                parent::setResponseStatus(401);
-                $array['error'] = "Acesso negado";
-            }
-
-        }else{
-            parent::setResponseStatus(401);
-            $array['error'] = "Acesso negado";
+          $this->response->json($dados);
+        } else {
+          $this->response->json(["error" => "Doador não existe na base de dados"], 404);
         }
-
-        parent::returnJson($array);
 
     }//metodo
 
@@ -138,8 +85,8 @@ class DoadorController extends Controller {
 
         $array = array();
 
-        $method = parent::getMethodRequisition();
-        $data = parent::getRequestData();
+        $metodo = $this->request->getMethod();
+        $data = $this->request->all();
 
         if(!empty($data['nome']) && !empty($data['email']) && !empty($data['senha']) && !empty($data['cpf'])){
 
@@ -189,9 +136,8 @@ class DoadorController extends Controller {
 
         $mudar['id'] = $args['id'];
 
-        $metodo = parent::getMethodRequisition();
-
-        $data = parent::getRequestData();
+        $metodo = $this->request->getMethod();
+        $data = $this->request->all();
 
         if(!empty($data['jwt'])){
 
@@ -280,8 +226,8 @@ class DoadorController extends Controller {
 
         $array = array('loged' => false);
 
-        $metodo = parent::getMethodRequisition();
-        $data = parent::getRequestData();
+        $metodo = $this->request->getMethod();
+        $data = $this->request->all();
 
         if(!empty($data['jwt'])){
 
