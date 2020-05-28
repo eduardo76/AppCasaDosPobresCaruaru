@@ -3,20 +3,6 @@ namespace core;
 
 use src\Config;
 
-// class Request {
-
-//     public static function getUrl() {
-//         $url = filter_input(INPUT_GET, 'request');
-//         $url = str_replace(Config::BASE_DIR, '', $url);
-//         return '/'.$url;
-//     }
-
-//     public static function getMethod() {
-//         return strtolower($_SERVER['REQUEST_METHOD']);
-//     }
-
-// }
-
 class Request {
 
   private $data = [];
@@ -56,8 +42,8 @@ class Request {
   }
 
   public function getApiToken() {
-    if (isset($this->headers["X-API-TOKEN"])) {
-      return $this->header("X-API-TOKEN");
+    if (isset($this->headers["X-API-KEY"])) {
+      return $this->header("X-API-KEY");
     }
 
     return '';

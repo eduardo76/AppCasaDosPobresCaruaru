@@ -64,21 +64,23 @@ class DoadorController extends Controller {
 
     //Listar usuário pelo id.
     public function getUserForId($args = array()){
+
         $this->validateJWT();
 
-        $usuario = DoadorDao::getUser($args['id']);
+        $id = $args['id'];
+        $usuario = DoadorDao::getUser($id);
 
         if($usuario){
           $dados = [
             'loged'     => true,
             'logedUser' => $this->logedUser,
-            'isMe'      => DoadorDao::isMe($this->logedUser['id'], $args['id']),
+            'isMe'      => DoadorDao::isMe($this->logedUser['id'], $id),
             'doador'    => $usuario
           ];
 
           $this->response->json($dados);
         } else {
-          $this->response->json(["error" => "Doador não existe na base de dados"], 404);
+          $this->response->json(["error" => "Doador não existe na base de dados"], 400);
         }
 
     }//metodo
@@ -87,47 +89,32 @@ class DoadorController extends Controller {
     public function insertUser(){
 
         $array = array();
-
-        $metodo = $this->request->getMethod();
-        $data = $this->request->all();
+        $data  = $this->request->all();
 
         if(!empty($data['nome']) && !empty($data['email']) && !empty($data['senha']) && !empty($data['cpf'])){
-
-            if($method == 'POST'){
-
-                    if(filter_var($data['email'], FILTER_VALIDATE_EMAIL)){
-
-                        $usuario = new Doador();
-                        $usuario->setNome(addslashes($data['nome']));
-                        $usuario->setEmail(addslashes($data['email']));
-                        $usuario->setSenha(addslashes($data['senha']));
-                        $usuario->setCpf(addslashes($data['cpf']));
-
-                        if(DoadorDao::insertUser($usuario)){
-                            $array['usuario'] = $usuario->getId();
-
-                            parent::setResponseStatus(201);
-                            $array['success'] = 'Cadastro realizado';
-                        }else{
-                            parent::setResponseStatus(203);
-                            $array['error'] = "Este e-mail ou CPF já existe na base de dados";
-                        }
-
-                    }else{
-                        parent::setResponseStatus(203);
-                        $array['error'] = "O e-mail enviado não é válido";
-                    }
-
-            }else{
-                $array['error'] = "Método de requisição indisponível";
-            }
-
-        }else{
-            parent::setResponseStatus(203);
-            $array['error'] = "Algum campo não foi preenchido";
+          $this->response->json("Algum campo não foi preenchido", 400);
         }
 
-        parent::returnJson($array);
+        if(filter_var($data['email'], FILTER_VALIDATE_EMAIL)){
+          $this->response->json("O e-mail enviado não é válido", 400);
+        }
+
+        $usuario = new Doador();
+        $usuario->setNome(addslashes($data['nome']));
+        $usuario->setEmail(addslashes($data['email']));
+        $usuario->setSenha(addslashes($data['senha']));
+        $usuario->setCpf(addslashes($data['cpf']));
+
+        if(DoadorDao::insertUser($usuario)){
+            $array['usuario'] = $usuario->getId();
+            $array['success'] = 'Cadastro realizado';
+
+            $this->response->json($array, 201);
+        } else {
+          $this->response->json(['error' => "Este e-mail ou CPF já existe na base de dados"]);
+        }
+
+        $this->response->json($array);
 
     }//metodo
 

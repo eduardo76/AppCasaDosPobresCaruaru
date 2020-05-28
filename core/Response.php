@@ -8,7 +8,12 @@ class Response {
     static::setStatus($status);
  
     header("Content-Type: application/json");
-    echo json_encode($array);
+    if (is_array($array)) {
+      echo json_encode($array);
+    } else {
+      echo $array;
+    }
+
     exit;
   }
 
